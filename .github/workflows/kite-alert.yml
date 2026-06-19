@@ -62,10 +62,4 @@ jobs:
 
         run: |
 
-          curl -s -G "https://api.callmebot.com/whatsapp.php" \
-
-            --data-urlencode "phone=$WHATSAPP_PHONE" \
-
-            --data-urlencode "text=$(cat out_message.txt)" \
-
-            --data-urlencode "apikey=$CALLMEBOT_APIKEY"
+          curl -s -G "https://api.callmebot.com/whatsapp.php" --data-urlencode "phone=$WHATSAPP_PHONE" --data-urlencode "text=$(cat out_message.txt)" --data-urlencode "apikey=$CALLMEBOT_APIKEY"
