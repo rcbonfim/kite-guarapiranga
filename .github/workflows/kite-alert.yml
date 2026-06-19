@@ -1,0 +1,71 @@
+name: Kite wind alert - Guarapiranga
+
+on:
+
+  schedule:
+
+    # 10:00 UTC = 07:00 in Sao Paulo (BRT, UTC-3). Change the hour to suit you.
+
+    - cron: "0 10 * * *"
+
+  workflow_dispatch: {}
+
+permissions:
+
+  contents: write
+
+jobs:
+
+  check-wind:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+
+        with:
+
+          python-version: "3.11"
+
+      - name: Install dependencies
+
+        run: pip install matplotlib
+
+      - name: Render image and build message
+
+        run: python kite_guarapiranga.py
+
+      - name: Commit today's image
+
+        run: |
+
+          git config user.name "github-actions[bot]"
+
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add forecast 2>/dev/null || true
+
+          git commit -m "wind forecast $(date -u +%F)" || echo "nothing to commit"
+
+          git push
+
+      - name: Send WhatsApp
+
+        env:
+
+          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+
+        run: |
+
+          curl -s -G "https://api.callmebot.com/whatsapp.php" \
+
+            --data-urlencode "phone=$WHATSAPP_PHONE" \
+
+            --data-urlencode "text=$(cat out_message.txt)" \
+
+            --data-urlencode "apikey=$CALLMEBOT_APIKEY"
